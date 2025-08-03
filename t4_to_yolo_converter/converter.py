@@ -1,4 +1,3 @@
-
 import json
 import shutil
 from pathlib import Path
@@ -126,7 +125,7 @@ def process_annotations(object_ann_file: str, token_to_id: Dict[str, int],
     return image_annotations
 
 def convert_single_dataset(t4_dataset_path: Path, output_dir: Path, 
-                          unified_token_to_id: Dict[str, int], camera_filter: str = None, allowed_class_names=None, id_to_name=None) -> Tuple[int, int]:
+                          unified_token_to_id: Dict[str, int], camera_filter=None, allowed_class_names=None, id_to_name=None) -> Tuple[int, int]:
     print(f"Processing dataset: {t4_dataset_path.name}")
     annotation_dir = t4_dataset_path / "annotation"
     category_file = annotation_dir / "category.json"
@@ -142,10 +141,12 @@ def convert_single_dataset(t4_dataset_path: Path, output_dir: Path,
     if camera_filter:
         filtered_mapping = {}
         for token, info in sample_data_mapping.items():
-            if camera_filter in info['filename']:
-                filtered_mapping[token] = info
+            for cam in camera_filter:
+                if cam in info['filename']:
+                    filtered_mapping[token] = info
+                    break
         sample_data_mapping = filtered_mapping
-        print(f"  Filtered to {len(sample_data_mapping)} images from camera: {camera_filter}")
+        print(f"  Filtered to {len(sample_data_mapping)} images from camera(s): {', '.join(camera_filter)}")
     else:
         print(f"  Found {len(sample_data_mapping)} image files from all cameras")
     dataset_prefix = t4_dataset_path.name if len(list(t4_dataset_path.parent.iterdir())) > 1 else ""
@@ -210,7 +211,7 @@ def create_dataset_yaml(yolo_output_path: str, id_to_name: Dict[int, str]):
         yaml.dump(dataset_config, f, default_flow_style=False, allow_unicode=True)
     print(f"Created dataset config: {yaml_path}")
 
-def convert_t4_to_yolo(input_path: str, output_path: str, camera_filter: str = None, allowed_class_names=None):
+def convert_t4_to_yolo(input_path: str, output_path: str, camera_filter=None, allowed_class_names=None):
     input_dir = Path(input_path)
     output_dir = Path(output_path)
     if not input_dir.exists():
@@ -233,7 +234,12 @@ def convert_t4_to_yolo(input_path: str, output_path: str, camera_filter: str = N
     print(f"Unified class mapping created with {len(id_to_name)} classes")
     total_images = 0
     total_annotations = 0
-    print(f"\nStarting conversion with camera filter: {camera_filter or 'All cameras'}")
+    if camera_filter:
+        if isinstance(camera_filter, str):
+            camera_filter = [camera_filter]
+        print(f"\nStarting conversion with camera filter(s): {', '.join(camera_filter)}")
+    else:
+        print("\nStarting conversion with camera filter: All cameras")
     allowed_class_names_set = set(allowed_class_names) if allowed_class_names else None
     for dataset_path in t4_datasets:
         images_copied, annotations_count = convert_single_dataset(
@@ -241,7 +247,7 @@ def convert_t4_to_yolo(input_path: str, output_path: str, camera_filter: str = N
         )
         total_images += images_copied
         total_annotations += annotations_count
-    print("\nCreating dataset configuration...")
+    print(f"\nConversion complete. {total_images} images, {total_annotations} annotations written.")
     create_dataset_yaml(str(output_dir), id_to_name)
     print("\nConversion completed successfully!")
     print(f"Total datasets processed: {len(t4_datasets)}")

@@ -34,8 +34,15 @@ t4-to-yolo "dataset_047" "yolo_output"
 
 # Specific camera
 python -m t4_to_yolo_converter.main "dataset_047" "yolo_output" --camera CAM_FRONT_NARROW
+# Specify multiple cameras separated by commas
+python -m t4_to_yolo_converter.main "dataset_047" "yolo_output" --camera CAM_FRONT_NARROW,CAM_FRONT_WIDE
+# or specify multiple times
+python -m t4_to_yolo_converter.main "dataset_047" "yolo_output" --camera CAM_FRONT_NARROW --camera CAM_FRONT_WIDE
+python -m t4_to_yolo_converter.main "dataset_047" "yolo_output" --camera CAM_FRONT_NARROW --camera CAM_FRONT_WIDE
 # or
 t4-to-yolo "dataset_047" "yolo_output" --camera CAM_FRONT_NARROW
+t4-to-yolo "dataset_047" "yolo_output" --camera CAM_FRONT_NARROW,CAM_FRONT_WIDE
+t4-to-yolo "dataset_047" "yolo_output" --camera CAM_FRONT_NARROW --camera CAM_FRONT_WIDE
 ```
 
 ### Multiple Datasets
@@ -133,6 +140,14 @@ pip install -e .
 python -m t4_to_yolo_converter.main --help
 # or t4-to-yolo --help
 ```
+
+## Options
+
+- `--camera CAMERA_NAME` : 指定カメラのみ変換。複数指定可（カンマ区切りまたは複数回指定）
+  - 例: `--camera CAM1,CAM2` または `--camera CAM1 --camera CAM2`
+- `--classes` : クラス名をカンマ区切りで指定
+- `--classes-file` : クラス名リストを含むYAMLファイルを指定
+- `--list` : データセット一覧を表示して終了
 
 ## License
 

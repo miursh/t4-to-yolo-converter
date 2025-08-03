@@ -8,7 +8,7 @@ def main():
     parser = argparse.ArgumentParser(description="Convert T4 format to YOLO format (Unified)")
     parser.add_argument("input_path", help="Path to T4 dataset directory or directory containing T4 datasets")
     parser.add_argument("output_path", help="Path to output YOLO dataset directory")
-    parser.add_argument("--camera", help="Filter by camera name (e.g., CAM_FRONT_NARROW)", default=None)
+    parser.add_argument("--camera", action="append", help="Filter by camera name (can be specified multiple times or comma-separated, e.g. --camera CAM1 --camera CAM2 or --camera CAM1,CAM2)", default=None)
     parser.add_argument("--classes", help="Comma-separated list of class names to convert (e.g. car,motorcycle,bicycle,pedestrian)", default=None)
     parser.add_argument("--classes-file", help="Path to a YAML file containing a class list (key: classes)", default=None)
     parser.add_argument("--list", action="store_true", help="List found T4 datasets and exit")
@@ -44,7 +44,14 @@ def main():
                 else:
                     print("Error: YAML file must contain a 'classes' key with a list of class names.")
                     return 1
-        convert_t4_to_yolo(args.input_path, args.output_path, args.camera, class_list)
+        # camera: flatten and split comma
+        camera_list = []
+        if args.camera:
+            for c in args.camera:
+                camera_list.extend([x.strip() for x in c.split(",") if x.strip()])
+        else:
+            camera_list = None
+        convert_t4_to_yolo(args.input_path, args.output_path, camera_list, class_list)
     except Exception as e:
         print(f"Error: {e}")
         return 1
