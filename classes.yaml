@@ -1,0 +1,11 @@
+classes:
+  - car
+  - bus
+  - truck
+  - motorcycle
+  - bicycle
+  - train
+  - other_vehicle
+  - pedestrian
+  - other_pedestrian
+  - animal

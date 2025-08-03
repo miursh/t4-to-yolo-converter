@@ -126,7 +126,7 @@ def process_annotations(object_ann_file: str, token_to_id: Dict[str, int],
     return image_annotations
 
 def convert_single_dataset(t4_dataset_path: Path, output_dir: Path, 
-                          unified_token_to_id: Dict[str, int], camera_filter: str = None) -> Tuple[int, int]:
+                          unified_token_to_id: Dict[str, int], camera_filter: str = None, allowed_class_names=None, id_to_name=None) -> Tuple[int, int]:
     print(f"Processing dataset: {t4_dataset_path.name}")
     annotation_dir = t4_dataset_path / "annotation"
     category_file = annotation_dir / "category.json"
@@ -169,6 +169,16 @@ def convert_single_dataset(t4_dataset_path: Path, output_dir: Path,
     for unique_filename, yolo_lines in image_annotations.items():
         if unique_filename not in unique_to_original:
             continue
+        # Filter by allowed_class_names if specified
+        filtered_lines = []
+        for yolo_line in yolo_lines:
+            class_id = int(yolo_line.split()[0])
+            if allowed_class_names and id_to_name:
+                if id_to_name.get(class_id) not in allowed_class_names:
+                    continue
+            filtered_lines.append(yolo_line)
+        if not filtered_lines:
+            continue
         original_filename = unique_to_original[unique_filename]
         src_image_path = t4_dataset_path / original_filename
         dst_image_path = images_dir / unique_filename
@@ -180,9 +190,9 @@ def convert_single_dataset(t4_dataset_path: Path, output_dir: Path,
                 images_copied += 1
                 print(f"    Copied: {original_filename} -> {unique_filename}")
             with open(label_path, 'w', encoding='utf-8') as f:
-                f.write('\n'.join(yolo_lines) + '\n')
-            total_annotations += len(yolo_lines)
-            print(f"    Created label: {label_name} with {len(yolo_lines)} annotations")
+                f.write('\n'.join(filtered_lines) + '\n')
+            total_annotations += len(filtered_lines)
+            print(f"    Created label: {label_name} with {len(filtered_lines)} annotations")
         else:
             print(f"    Warning: Image not found: {src_image_path}")
     return images_copied, total_annotations
@@ -200,7 +210,7 @@ def create_dataset_yaml(yolo_output_path: str, id_to_name: Dict[int, str]):
         yaml.dump(dataset_config, f, default_flow_style=False, allow_unicode=True)
     print(f"Created dataset config: {yaml_path}")
 
-def convert_t4_to_yolo(input_path: str, output_path: str, camera_filter: str = None):
+def convert_t4_to_yolo(input_path: str, output_path: str, camera_filter: str = None, allowed_class_names=None):
     input_dir = Path(input_path)
     output_dir = Path(output_path)
     if not input_dir.exists():
@@ -224,9 +234,10 @@ def convert_t4_to_yolo(input_path: str, output_path: str, camera_filter: str = N
     total_images = 0
     total_annotations = 0
     print(f"\nStarting conversion with camera filter: {camera_filter or 'All cameras'}")
+    allowed_class_names_set = set(allowed_class_names) if allowed_class_names else None
     for dataset_path in t4_datasets:
         images_copied, annotations_count = convert_single_dataset(
-            dataset_path, output_dir, name_to_id, camera_filter
+            dataset_path, output_dir, name_to_id, camera_filter, allowed_class_names_set, id_to_name
         )
         total_images += images_copied
         total_annotations += annotations_count
