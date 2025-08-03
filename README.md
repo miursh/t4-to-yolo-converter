@@ -1,4 +1,4 @@
-# T4 to YOLO Format Converter (Unified)
+# T4 to YOLO Format Converter
 
 A unified conversion tool from T4 dataset format to YOLO format.  
 Automatically detects and converts single or multiple T4 datasets.
@@ -17,7 +17,10 @@ Automatically detects and converts single or multiple T4 datasets.
 ### Basic Commands
 
 ```bash
-python t4_to_yolo_converter.py input_path output_path [--camera CAMERA_NAME] [--list]
+# Recommended (after pip install -e . or python -m):
+python -m t4_to_yolo_converter.main input_path output_path [--camera CAMERA_NAME] [--list]
+# or if installed as a package:
+t4-to-yolo input_path output_path [--camera CAMERA_NAME] [--list]
 ```
 
 ## Examples
@@ -25,19 +28,27 @@ python t4_to_yolo_converter.py input_path output_path [--camera CAMERA_NAME] [--
 ### Single Dataset
 ```bash
 # All cameras
-python t4_to_yolo_converter.py "dataset_047" "yolo_output"
+python -m t4_to_yolo_converter.main "dataset_047" "yolo_output"
+# or
+t4-to-yolo "dataset_047" "yolo_output"
 
 # Specific camera
-python t4_to_yolo_converter.py "dataset_047" "yolo_output" --camera CAM_FRONT_NARROW
+python -m t4_to_yolo_converter.main "dataset_047" "yolo_output" --camera CAM_FRONT_NARROW
+# or
+t4-to-yolo "dataset_047" "yolo_output" --camera CAM_FRONT_NARROW
 ```
 
 ### Multiple Datasets
 ```bash
 # List datasets
-python t4_to_yolo_converter.py "datasets/" "yolo_batch" --list
+python -m t4_to_yolo_converter.main "datasets/" "yolo_batch" --list
+# or
+t4-to-yolo "datasets/" "yolo_batch" --list
 
 # Convert all
-python t4_to_yolo_converter.py "datasets/" "yolo_batch"
+python -m t4_to_yolo_converter.main "datasets/" "yolo_batch"
+# or
+t4-to-yolo "datasets/" "yolo_batch"
 ```
 
 ## Auto-Detection
@@ -76,7 +87,7 @@ Example:
 
 ### Single Dataset
 ```bash
-$ python t4_to_yolo_converter.py "dataset_047" "yolo_output" --camera CAM_FRONT_NARROW
+$ python -m t4_to_yolo_converter.main "dataset_047" "yolo_output" --camera CAM_FRONT_NARROW
 
 Found 1 T4 dataset(s) to convert
 Creating unified class mapping with 25 classes
@@ -87,7 +98,7 @@ Conversion completed successfully!
 
 ### Multiple Datasets
 ```bash
-$ python t4_to_yolo_converter.py "datasets/" "yolo_batch" --list
+$ python -m t4_to_yolo_converter.main "datasets/" "yolo_batch" --list
 Found 59 T4 dataset(s)
 ```
 
@@ -117,8 +128,10 @@ names:
 ```bash
 git clone <repository-url>
 cd t4-to-yolo-converter
-pip install pyyaml
-python t4_to_yolo_converter.py --help
+pip install -e .
+# or pip install .
+python -m t4_to_yolo_converter.main --help
+# or t4-to-yolo --help
 ```
 
 ## License
